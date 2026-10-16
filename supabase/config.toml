@@ -1,0 +1,4 @@
+project_id = "cpi-quiz"
+
+[functions.cpi-api]
+verify_jwt = false

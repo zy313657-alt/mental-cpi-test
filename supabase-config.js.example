@@ -1,0 +1,5 @@
+// Copy this file to supabase-config.js for local static hosting.
+window.CPI_CONFIG = {
+  supabaseUrl: "https://YOUR_PROJECT_REF.supabase.co",
+  anonKey: "YOUR_SUPABASE_ANON_KEY"
+};

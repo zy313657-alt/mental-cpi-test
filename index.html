@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f7f6f2" />
+  <title>精神状态 CPI 测评</title>
+  <script src="./supabase-config.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap');
+    :root { --ink:#20231f; --muted:#757970; --paper:#f7f6f2; --line:#e6e5de; --green:#c7f36b; --lime:#b4e455; --coral:#fa806b; --white:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:'DM Sans','Noto Sans SC',sans-serif; min-height:100vh; }
+    button { font:inherit; }
+    .shell { max-width:1180px; margin:auto; padding:0 42px; }
+    header { height:86px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:11px; font-size:15px; font-weight:700; letter-spacing:-.03em; }
+    .brand-mark { width:27px; height:27px; border-radius:9px 9px 9px 3px; background:var(--ink); color:var(--green); display:grid; place-items:center; font-size:15px; font-weight:700; }
+    .header-right { display:flex; align-items:center; gap:20px; color:var(--muted); font-size:12px; }
+    .tag { border:1px solid var(--line); border-radius:30px; padding:8px 11px; color:var(--ink); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.08em; }
+    main { display:grid; grid-template-columns: minmax(0,1fr) 330px; gap:80px; padding:67px 0 80px; align-items:start; }
+    .eyebrow { font-family:'DM Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:#6a7162; display:flex; align-items:center; gap:9px; }
+    .eyebrow:before { content:''; width:7px; height:7px; background:var(--coral); border-radius:50%; }
+    h1 { font-size:clamp(48px,6.5vw,82px); line-height:1.02; letter-spacing:-.075em; margin:22px 0 20px; font-weight:700; }
+    h1 span { color:#93978d; }
+    .intro { max-width:520px; color:#676c63; font-size:15px; line-height:1.85; margin:0 0 32px; }
+    .start-row { display:flex; gap:17px; align-items:center; }
+    .primary { background:var(--ink); color:white; border:0; border-radius:8px; padding:15px 21px; cursor:pointer; font-weight:600; display:inline-flex; gap:18px; align-items:center; transition:transform .2s,background .2s; }
+    .primary:hover { background:#363b33; transform:translateY(-2px); }
+    .small-note { font-size:11px; color:var(--muted); }
+    .facts { display:grid; grid-template-columns:repeat(3,1fr); max-width:540px; border-top:1px solid var(--line); margin-top:54px; padding-top:20px; }
+    .fact + .fact { border-left:1px solid var(--line); padding-left:21px; }
+    .fact strong { display:block; font-family:'DM Mono',monospace; font-size:18px; letter-spacing:-.06em; }
+    .fact span { display:block; color:var(--muted); font-size:11px; margin-top:6px; }
+    .visual { position:relative; min-height:440px; display:flex; align-items:center; justify-content:center; }
+    .orbit { position:absolute; width:340px; height:340px; border:1px solid #e0dfd6; border-radius:50%; }
+    .orbit:before,.orbit:after { content:''; position:absolute; inset:30px; border:1px dashed #d9d9ce; border-radius:50%; }
+    .orbit:after { inset:67px; border-style:solid; opacity:.65; }
+    .score-card { position:relative; z-index:1; width:250px; height:290px; background:var(--green); border-radius:5px 5px 65px 5px; padding:23px; transform:rotate(-5deg); box-shadow:0 25px 55px #22221b1a; }
+    .score-top { display:flex; justify-content:space-between; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.08em; }
+    .score-big { font-size:94px; font-weight:700; line-height:1; letter-spacing:-.1em; margin:32px 0 3px; }
+    .score-caption { font-size:12px; font-weight:600; }
+    .score-line { height:1px; background:#20231f42; margin:20px 0 13px; }
+    .mini-bars { display:flex; height:35px; align-items:end; gap:5px; }
+    .mini-bars i { display:block; width:10px; background:#20231f; border-radius:3px 3px 0 0; }
+    .stamp { position:absolute; z-index:2; right:7px; bottom:65px; background:var(--coral); border:1px solid var(--ink); width:95px; height:95px; display:grid; place-items:center; text-align:center; border-radius:50%; transform:rotate(12deg); font-family:'DM Mono',monospace; font-size:10px; line-height:1.35; box-shadow:3px 4px 0 var(--ink); }
+    .float-label { position:absolute; left:0; top:100px; transform:rotate(-9deg); background:white; border:1px solid var(--line); padding:10px 13px; font-size:11px; box-shadow:0 8px 20px #00000009; }
+    .float-label b { font-family:'DM Mono',monospace; font-size:14px; margin-right:7px; }
+    footer { border-top:1px solid var(--line); padding:20px 0; display:flex; justify-content:space-between; color:#8c9087; font-size:10px; }
+    .modal { position:fixed; inset:0; z-index:10; background:#171a16a6; display:none; align-items:center; justify-content:center; padding:20px; }
+    .modal.open { display:flex; }
+    .panel { width:min(590px,100%); background:var(--paper); border-radius:12px; padding:30px; box-shadow:0 30px 80px #0004; animation:rise .25s ease-out; }
+    @keyframes rise { from { opacity:0; transform:translateY(12px) } to {opacity:1;transform:none} }
+    .quiz-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+    .quiz-head .eyebrow { font-size:10px; }
+    .close { border:0; background:transparent; font-size:25px; cursor:pointer; color:var(--muted); }
+    .progress { height:5px; background:#e6e5de; border-radius:9px; margin-bottom:28px; overflow:hidden; }
+    .progress i { display:block; height:100%; background:var(--lime); width:0%; transition:width .25s; }
+    .q-count { font:11px 'DM Mono',monospace; color:var(--muted); }
+    .question { font-size:27px; line-height:1.45; letter-spacing:-.04em; margin:8px 0 22px; font-weight:600; }
+    .answers { display:grid; gap:9px; }
+    .answer { display:flex; align-items:center; justify-content:space-between; width:100%; text-align:left; padding:14px 15px; border:1px solid var(--line); background:white; border-radius:7px; cursor:pointer; font-size:13px; color:var(--ink); transition:.15s; }
+    .answer:hover { border-color:#89917d; transform:translateX(2px); }
+    .answer span:last-child { font:11px 'DM Mono',monospace; color:#999d94; }
+    .result { text-align:center; padding:8px 5px 2px; }
+    .result-orb { width:142px; height:142px; border-radius:50%; background:var(--green); margin:10px auto 19px; display:grid; place-items:center; font:700 48px 'DM Mono',monospace; letter-spacing:-.1em; box-shadow:inset 0 0 0 1px #20231f14; }
+    .result h2 { font-size:27px; letter-spacing:-.05em; margin:0 0 8px; }
+    .result p { color:#686d64; font-size:13px; line-height:1.8; max-width:405px; margin:0 auto 20px; }
+    .result-foot { font:10px 'DM Mono',monospace; color:#92968d; margin:16px 0; }
+    .secondary { background:transparent; border:1px solid var(--line); padding:12px 15px; border-radius:7px; cursor:pointer; color:var(--ink); }
+    .field { width:100%; border:1px solid var(--line); border-radius:7px; background:white; padding:14px 15px; font:inherit; outline:none; margin:10px 0 8px; }
+    .field:focus { border-color:#929987; box-shadow:0 0 0 3px #c7f36b55; }
+    .error { min-height:18px; color:#b94a3a; font-size:12px; margin:3px 0 12px; }
+    .quiz-actions { display:flex; justify-content:space-between; align-items:center; margin-top:19px; }
+    .back-btn { border:0; background:transparent; padding:10px 0; color:#62675e; cursor:pointer; }
+    .back-btn:disabled { opacity:.35; cursor:not-allowed; }
+    .result-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    .secondary:disabled { opacity:.4; cursor:not-allowed; }
+    .toast { position:fixed; z-index:30; left:50%; bottom:22px; transform:translate(-50%,20px); opacity:0; pointer-events:none; color:white; background:#20231f; padding:11px 16px; border-radius:30px; font-size:12px; transition:.2s; max-width:calc(100vw - 32px); text-align:center; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .result-sheet { width:640px; background:var(--paper); padding:35px; color:var(--ink); font-family:'DM Sans','Noto Sans SC',sans-serif; }
+    .result-sheet .sheet-top { display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:15px; font:11px 'DM Mono',monospace; color:var(--muted); }
+    .result-sheet .sheet-hero { text-align:center; padding:25px 0 20px; }
+    .result-sheet .sheet-score { font:700 74px 'DM Mono',monospace; letter-spacing:-.1em; }
+    .result-sheet .sheet-title { font-size:27px; font-weight:700; margin:6px 0 9px; }
+    .result-sheet .sheet-copy { max-width:510px; margin:auto; color:#62675e; font-size:14px; line-height:1.9; }
+    .result-sheet .sheet-box { background:white; border:1px solid var(--line); border-radius:10px; padding:18px; margin:12px 0; }
+    .result-sheet .sheet-box h3 { margin:5px 0 8px; font-size:17px; }
+    .result-sheet .sheet-box p { color:#62675e; line-height:1.8; font-size:13px; margin:0; }
+    .result-sheet .sheet-dims { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:14px; }
+    .result-sheet .sheet-dim { background:#f5f5ef; border-radius:7px; padding:11px; font-size:11px; }
+    .result-sheet .sheet-dim b { display:block; font:16px 'DM Mono',monospace; margin-top:5px; }
+    .result-sheet .sheet-disclaimer { color:#92968d; font-size:10px; line-height:1.7; border-top:1px solid var(--line); padding-top:14px; margin-top:18px; }
+    .disclaimer { max-width:520px; margin-top:20px; color:#999d94; font-size:10px; line-height:1.7; }
+    @media(max-width:600px) { .result-sheet{width:100%;padding:24px}.result-sheet .sheet-score{font-size:60px}.result-sheet .sheet-dims{grid-template-columns:1fr}.result-actions{display:grid;grid-template-columns:1fr 1fr}.result-actions button{width:100%;padding:12px 8px;font-size:12px}.field{font-size:16px} }
+    @media(max-width:800px) { .shell{padding:0 23px} header{height:70px} main{grid-template-columns:1fr;gap:20px;padding:48px 0 50px} .visual{min-height:360px;order:-1} .orbit{width:300px;height:300px} .score-card{width:220px;height:260px} .score-big{font-size:80px;margin-top:23px} .stamp{right:calc(50% - 160px);bottom:35px;width:80px;height:80px;font-size:9px} .float-label{left:calc(50% - 170px);top:70px} h1{font-size:60px;margin-top:17px} .facts{margin-top:38px} .intro{font-size:14px} footer{font-size:9px} }
+    @media(max-width:420px) { .header-right span:first-child{display:none} .visual{min-height:325px} .orbit{width:270px;height:270px} .score-card{width:200px;height:238px;padding:19px} .score-big{font-size:72px} .stamp{right:calc(50% - 145px);bottom:28px} .float-label{left:calc(50% - 150px)} h1{font-size:53px} .panel{padding:22px 18px} .question{font-size:23px} }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><div class="brand-mark">C</div>状态观察室</div>
+      <div class="header-right"><span>给最近的自己，做一次小盘点</span><span class="tag">VOL. 01 — 12 QUESTIONS</span></div>
+    </header>
+    <main>
+      <section>
+        <div class="eyebrow">MOOD INDEX / CPI</div>
+        <h1>精神状态<br><span>CPI 测评</span></h1>
+        <p class="intro">你的理智购买力还剩多少？每次从 36 道生活场景题库中随机抽取 12 道，覆盖反刍、决策疲劳和情绪调节三个维度，看看最近一个月的状态。CPI 越高，代表这份趣味测评中的精神资源状态越充足；凭真实感受作答，不必追求“正确答案”。</p>
+        <div class="start-row"><button class="primary" id="start">输入密码开始 <span>↗</span></button><span class="small-note">约 2–3 分钟 · 每次 12 题</span></div>
+        <div class="facts"><div class="fact"><strong>36 → 12</strong><span>题库随机抽题</span></div><div class="fact"><strong>0—100%</strong><span>精神状态 CPI</span></div><div class="fact"><strong>LAST MONTH</strong><span>回顾最近一个月</span></div></div>
+        <p class="disclaimer">本测评是基于反刍思维、自我损耗与情绪耗竭概念设计的自我觉察小游戏，不是经过临床验证的量表，结果不构成诊断。如持续感到困扰，可考虑联系信任的人或专业心理支持。</p>
+      </section>
+      <aside class="visual" aria-label="精神状态指数示意卡片">
+        <div class="orbit"></div><div class="float-label"><b>↗ 12.8%</b>心情涨幅</div>
+        <div class="score-card"><div class="score-top"><span>YOUR CPI</span><span>●●●</span></div><div class="score-big">72</div><div class="score-caption">精神状态指数</div><div class="score-line"></div><div class="score-top"><span>MOOD TREND</span><span>↑ UP</span></div><div class="mini-bars" aria-hidden="true"><i style="height:30%"></i><i style="height:52%"></i><i style="height:39%"></i><i style="height:72%"></i><i style="height:55%"></i><i style="height:86%"></i><i style="height:100%"></i><i style="height:74%"></i></div></div>
+        <div class="stamp">NOT A<br>DIAGNOSIS<br>✳</div>
+      </aside>
+    </main>
+    <footer><span>© 状态观察室 · 做自己的首席分析师</span><span>TAKE IT EASY ↗</span></footer>
+  </div>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="question">
+    <div class="panel"><div class="quiz-head"><div class="eyebrow">CPI CHECK / <span id="stepLabel">01</span></div><button class="close" id="close" aria-label="关闭">×</button></div><div class="progress"><i id="progress"></i></div><div id="quizBody"></div></div>
+  </div>
+  <div class="modal" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle"><div class="panel"><div class="quiz-head"><div class="eyebrow">A LITTLE REMINDER</div><button class="close" data-close="noticeModal" aria-label="关闭">×</button></div><h2 id="noticeTitle" style="font-size:25px;letter-spacing:-.04em;margin:8px 0 12px">好评有礼，感谢支持</h2><p style="font-size:14px;line-height:1.9;color:#676c63;margin:0 0 20px">店铺好评后，请联系客服并发送好评截图，即可获得一次再测机会。感谢你的支持，祝你今天也有好心情！</p><button class="primary" data-close="noticeModal">知道啦 <span>✓</span></button></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const dimensions = [
+      { name:'反刍频率', items:[
+        {q:'晚上躺下后，你脑子里回放“白天说错的那句话”的频率是？',a:['几乎不会，说完就翻篇','偶尔，如果那句话确实很尴尬','经常，明明没人注意到但我记得很清楚','几乎每晚，我能把三年前的话翻出来重新尴尬']},
+        {q:'当你和别人发生不愉快后，你需要多久才能“停止想这件事”？',a:['事情结束就结束了','几小时，转移注意力就好了','一两天，期间会反复分析“我当时应该那样说”','很久，甚至对方已经忘了，我还在脑内开庭']},
+        {q:'你发完一条朋友圈/小红书后，会反复点开看“谁点赞了、谁没点赞”吗？',a:['不会，发完就放下','偶尔点开看看','经常，还会对比“为什么ta给别人点了没给我点”','会反复看，甚至想删了重发，或者干脆设为仅自己可见']},
+        {q:'以下哪种情况最接近你？',a:['过去的尴尬瞬间，我基本想不起来了','偶尔会突然想起某件旧事，但很快过去','我经常在没有任何触发的情况下，突然被一段回忆“伏击”','我的大脑像一台自动播放“我的黑历史合集”的机器']},
+        {q:'你听到朋友离婚的消息，第一反应是？',a:['关心一下ta的状态，然后该干嘛干嘛','感慨一下，但不会往自己身上想','会忍不住想“如果是我怎么办”，然后开始审视自己的关系','会代入自己，脑内预演一遍分手/离婚流程，甚至想到财产怎么分']},
+        {q:'朋友回复你消息慢了，你的脑内活动是？',a:['没感觉，忙呗','偶尔会想“是不是我说错什么了”','会翻看之前的聊天记录，检查自己有没有不妥','能脑补出一整部“ta为什么不想理我”的连续剧']},
+        {q:'你是否有过“突然想起五年前某件事，然后脚趾抠地”的经历？',a:['没有，过去的事就过去了','偶尔，一年有那么几次','经常，而且不分时间地点','我的大脑似乎把“尴尬回忆”设成了屏保']},
+        {q:'你参加完一场聚会/饭局后，通常会？',a:['挺开心的，回家就睡','简单想想有没有说错话','会复盘自己说了什么、别人什么反应','会在脑内逐帧回放，找出所有“我不够好”的证据']},
+        {q:'别人夸你的时候，你的第一反应是？',a:['开心接受','有点不好意思，但能接受','会想“ta是不是在客套”','会立刻想起自己做得不好的地方，觉得对方夸错了人']},
+        {q:'你会在脑内“预演”即将发生的社交场景吗？比如明天要见的人、要开的会。',a:['不会，到时候再说','偶尔，如果是重要场合','经常，会提前想好几种可能的对话走向','我会预演到“万一冷场怎么办”“万一说错话怎么办”的程度']},
+        {q:'当你刷到“和自己观点不同”的内容时，你会？',a:['划走，不关我事','看看就过','会在心里反驳，但不会留言','会在脑内和对方辩论一整天，甚至想好了回复文案但最终没发']},
+        {q:'你是否有过“因为想太多而错过最佳回复时机”的经历？',a:['没有，我回复很及时','偶尔','经常，想好怎么回的时候话题已经过去了','这是我的常态，我的回复永远在“草稿箱”里']}
+      ]},
+      { name:'决策疲劳', items:[
+        {q:'中午同事问“吃什么”，你的典型状态是？',a:['快速决定，吃什么都可以','想几分钟，选一个熟悉的','反复切换外卖软件，最后说“随便，你们定”','因为选不出来，干脆不吃了或者让别人帮我决定']},
+        {q:'当需要在两个都不错的选项之间做选择时（比如两份offer、两个租房选择、两种方案），你的第一反应是？',a:['分析完就选，选了就不回头','会纠结，但能在一两天内决定','反复比较，担心选错，甚至希望有人替我做决定','拖到不能再拖，最后可能因为“选项过期”而失去选择权']},
+        {q:'你是否有过“因为今天要做太多小决定，导致晚上连看什么剧都选不出来”的经历？',a:['没有，小决定不消耗我','偶尔，在特别忙的日子','经常，所以我尽量把决定简化（比如固定吃同几家）','这就是我的日常，我的决策能力在下午就基本耗尽']},
+        {q:'微信里躺着一条“在吗”，你的感受是？',a:['直接回“在，怎么了”','会想一下ta要干嘛，但很快回复','会先点开ta的朋友圈看看最近动态，再决定怎么回','光是看到“在吗”两个字就开始累了，可能拖到晚上才回']},
+        {q:'网购时，你从“想买”到“下单”通常需要多久？',a:['很快，看中就买','放购物车一两天，确认需要就买','反复对比不同平台、不同店铺，加购又删除','收藏了一堆，最后因为“选不出来”而放弃购买']},
+        {q:'周末出门穿什么，你的决策过程是？',a:['打开衣柜随便拿一套','稍微搭配一下','试了两三套，拍照问朋友','因为选不出来，最后穿回了昨天那套']},
+        {q:'当你需要在“现在做”和“等会儿做”之间选择时，你通常？',a:['能现在做就现在做','看心情，但一般不会拖太久','会先做容易的，难的留到“状态好的时候”','在“现在做”和“等会儿做”之间纠结很久，结果两件事都没做']},
+        {q:'你是否有过“因为选择太多而干脆不选”的经历？比如视频网站首页、餐厅菜单。',a:['没有，我目标明确','偶尔','经常，所以我会固定看几个博主/吃几家店','选择越多我越痛苦，最好有人直接给我安排']},
+        {q:'收到婚礼邀请，你的第一反应是？',a:['祝福，然后看时间安排','会想一下要不要去、随多少份子','开始纠结穿什么、怎么请假、会不会遇到不想见的人','光是想到这些就累了，可能找借口不去']},
+        {q:'你会在小事上（比如选哪支笔、走哪条路）也感到选择困难吗？',a:['不会，小事不占脑子','偶尔','经常，所以我会固定用同一款','是的，我的大脑对所有选择一视同仁地消耗能量']},
+        {q:'当你发现自己的决定“可能不是最优解”时，你会？',a:['接受，没有完美选择','稍微遗憾一下，但能继续往前走','反复想“如果选了另一个会怎样”','陷入长时间的后悔，甚至想推翻重来']},
+        {q:'你是否有过“为了逃避做决定而故意拖延”的经历？',a:['没有，拖延和决定无关','偶尔，在特别难的决定上','经常，拖延的本质就是不想面对选择','我拖延的唯一原因就是：我还没决定好']}
+      ]},
+      { name:'情绪调节成本', items:[
+        {q:'当你在工作/学习中感到烦躁或委屈时，你通常怎么做？',a:['直接表达出来，不憋着','找个信任的人吐槽一下','告诉自己“别想了，先把事做完”，但情绪一直没走','表面完全正常，内心在反复演练“如果我现在掀桌会怎样”']},
+        {q:'你花在“让自己看起来情绪稳定”上的精力有多少？',a:['不需要花精力，我本来就挺稳定的','偶尔需要，比如在重要场合','经常需要，很多人不知道我其实很累','我每天都在“扮演一个正常人”，这件事本身就是最大的消耗']},
+        {q:'被领导/老师当众批评后，你通常会？',a:['接受批评，该改就改','当下有点难受，但很快过去','表面点头，内心在反复回放那个场景','接下来一整天都在想这件事，甚至想辞职/退学']},
+        {q:'你是否有过“明明什么都没做，但感觉一天下来精疲力尽”的体验？',a:['很少，累通常是因为真的做了事','偶尔，在压力大的时期','经常，尤其是和人打交道之后','这是我大部分日子的常态，我的累和“做了什么”无关']},
+        {q:'家庭群里亲戚又开始催婚/催生/问工资，你的反应是？',a:['直接糊弄过去，不往心里去','有点烦，但能消化','会认真生气，但表面维持礼貌','会在心里演练一百种回怼方式，但最后只发了一个“嗯嗯”']},
+        {q:'在社交场合中，你的“营业状态”能维持多久？',a:['全程都挺自然的','几个小时没问题','需要中途找借口去洗手间喘口气','从出门前就开始消耗，回家后需要一整天恢复']},
+        {q:'你会在别人面前“假装自己没事”吗？',a:['很少，我基本表里如一','偶尔，不想让别人担心','经常，尤其是对家人和同事','这已经是我的默认模式，我甚至忘了自己真实感受是什么']},
+        {q:'当你感到焦虑时，你的身体会有反应吗？比如心跳加速、胃部不适、失眠。',a:['很少，情绪不影响到身体','偶尔，在特别紧张的时候','经常，我的身体比我的嘴更诚实','我几乎一直处于某种身体紧绷状态，已经习惯了']},
+        {q:'你是否有过“因为怕影响别人而不敢表达负面情绪”的经历？',a:['没有，该说就说','偶尔，看场合','经常，我宁愿自己消化也不给别人添麻烦','这是我处理情绪的唯一方式，导致我经常感到孤立']},
+        {q:'当你看到别人情绪崩溃时，你的第一反应是？',a:['正常，每个人都有情绪','会去关心一下','有点羡慕，因为ta敢表达','会在心里想“我绝对不能变成那样”，然后更加用力地压住自己']},
+        {q:'你有多久没有“真正放松”过了？',a:['经常，我知道怎么让自己放松','偶尔，周末可以','想不起来上次完全放松是什么时候','我甚至不知道“放松”是什么感觉，停下来反而更焦虑']},
+        {q:'如果给你的情绪状态起一个名字，你会选？',a:['平静的湖面','偶尔有风的天气','长期阴天，偶尔放晴','一直在下雨，但我已经学会不打伞了']}
+      ]}
+    ];
+    const questionPool=dimensions.flatMap((d,di)=>d.items.map((item,qi)=>({...item,dimension:di,dimensionName:d.name,poolIndex:qi})));
+    let questions=[];
+    const modal=document.getElementById('modal'), body=document.getElementById('quizBody'), progress=document.getElementById('progress');
+    const toast=document.getElementById('toast');
+    let current=0, score=0, dimensionScores=[0,0,0], answers=[], activeCode='', resultData=null, toastTimer, remainingUses=null;
+    async function cpiApi(endpoint,payload){
+      const config=window.CPI_CONFIG;
+      if(config?.supabaseUrl&&config?.anonKey){const response=await fetch(`${config.supabaseUrl.replace(/\/$/,'')}/functions/v1/cpi-api/${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json','apikey':config.anonKey},body:JSON.stringify(payload)});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'服务请求失败');return data}
+      const response=await fetch(`/api/${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'服务请求失败');return data;
+    }
+    function makeQuestionSet(){questions=dimensions.flatMap((dimension,index)=>{const pool=questionPool.filter(question=>question.dimension===index);for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,4)});}
+    function showToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2600)}
+    function openModal(id){document.getElementById(id).classList.add('open')}
+    function closeModal(id){document.getElementById(id).classList.remove('open')}
+    document.getElementById('start').onclick=()=>{openGate();};
+    document.getElementById('close').onclick=()=>closeModal('modal');
+    document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>closeModal(button.dataset.close));
+    document.querySelectorAll('.modal').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)closeModal(el.id)}));
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.open').forEach(el=>closeModal(el.id))});
+    function openGate(){
+      body.innerHTML=`<div class="q-count">ACCESS PASS / PASSWORD REQUIRED</div><h2 class="question" id="question">输入测评密码</h2><p style="color:#686d64;font-size:13px;line-height:1.7;margin:-12px 0 14px">每个密码最多可完成指定次数的测评。点击开始答题时计入一次使用。</p><form id="gateForm"><input class="field" id="codeInput" type="password" autocomplete="one-time-code" placeholder="请输入你的测评密码" required><div class="error" id="gateError" aria-live="polite"></div><button class="primary" type="submit">验证并开始 <span>↗</span></button></form>`;
+      progress.style.width='0%';openModal('modal');
+      document.getElementById('gateForm').onsubmit=async e=>{e.preventDefault();const code=document.getElementById('codeInput').value.trim();if(!code)return;const button=e.currentTarget.querySelector('button[type="submit"]');button.disabled=true;button.textContent='正在验证…';try{if(location.protocol==='file:'){const error=document.getElementById('gateError');error.innerHTML='此页面是本地文件。请先双击项目中的 <b>启动测评.command</b>，或使用线上网站地址。';throw new Error('__local_file__')}const data=await cpiApi('validate',{code});activeCode=code;remainingUses=data.remaining;current=0;score=0;dimensionScores=[0,0,0];makeQuestionSet();answers=Array(questions.length).fill(null);renderQuestion()}catch(error){if(error.message!=='__local_file__')document.getElementById('gateError').textContent=error.message;button.disabled=false;button.innerHTML='验证并开始 <span>↗</span>'}};
+    }
+    function renderQuestion(){
+      const item=questions[current];
+      document.getElementById('stepLabel').textContent=String(current+1).padStart(2,'0');
+      progress.style.width=`${(current/questions.length)*100}%`;
+      body.innerHTML=`<div class="q-count">${item.dimensionName.toUpperCase()} · QUESTION ${String(current+1).padStart(2,'0')} / ${questions.length}</div><h2 class="question" id="question">${item.q}</h2><div class="answers">${item.a.map((text,i)=>`<button class="answer" data-score="${i+1}" ${answers[current]===i+1?'style="border-color:#89917d;background:#f4f8e9"':''}><span>${text}</span><span>选项 ${String.fromCharCode(65+i)} ↗</span></button>`).join('')}</div><div class="quiz-actions"><button class="back-btn" id="previous" ${current===0?'disabled':''}>← 上一题</button><span class="small-note">本密码剩余 ${remainingUses} 次</span><span></span></div>`;
+      body.querySelectorAll('.answer').forEach(button=>button.onclick=()=>{answers[current]=Number(button.dataset.score);current++;if(current<questions.length)renderQuestion();else{score=answers.reduce((sum,n)=>sum+n,0);dimensionScores=dimensions.map((_,di)=>answers.reduce((sum,n,qi)=>sum+(questions[qi].dimension===di?n:0),0));renderResult()}});
+      document.getElementById('previous').onclick=()=>{if(current>0){current--;renderQuestion()}};
+    }
+    function renderResult(){
+      const value=Math.max(0,Math.min(100,Math.round(100-((score-12)/36)*100)));
+      let title,tag,copy,color;
+      if(value>=81){title='精神富足户';tag='🟢 理智购买力坚挺，精神账户收支平衡。';copy='你较少被反复回想、日常选择或情绪管理长期牵住。保持自己的节奏，也给情绪留一点被看见的空间。'}
+      else if(value>=61){title='轻度通胀型';tag='🟡 精神货币温和贬值，整体仍在可恢复范围。';copy='你偶尔会反复琢磨或为选择费神，但通常能慢慢走出来。规律休息、散步，或和信任的人聊聊，可能帮你补充一些心理资源。'}
+      else if(value>=41){title='中度通胀型';tag='🟠 精神购买力有所缩水，日常消耗值得留意。';copy='反复回想、选择疲惫或维持如常可能已经占用不少精力。可以先减少不必要的小决定，并观察哪些情境最消耗你。'}
+      else if(value>=21){title='重度通胀型';tag='🔴 精神资源可能持续吃紧，值得认真照顾自己。';copy='最近的心理负担听起来可能不轻。先把恢复和支持放到日程里；如果这种状态持续影响生活，考虑联系专业心理支持。'}
+      else {title='精神账户告急';tag='⚫ 这份结果提示：你可能需要更多支持。';copy='如果反复思考、疲惫或难以做决定已持续影响生活，请尽快联系信任的人，并考虑寻求心理咨询或精神科专业支持。你不必独自扛着。'}
+      const max=Math.max(...dimensionScores), min=Math.min(...dimensionScores), high=dimensionScores.indexOf(max);
+      let type,typeCopy;
+      if(dimensionScores.every(n=>n>12)){type='全能型内耗';typeCopy='反刍、做决定和情绪调节三个维度都显示较高消耗，像同时开着好几个后台。'}
+      else if(dimensionScores.every(n=>n<8)){type='节能型';typeCopy='这次回答显示，三个维度的消耗都相对较低；你可能比较会把心理能量用在当下。'}
+      else if(high===0){type='回放型内耗';typeCopy='你的大脑容易自动回放旧片段。试着把“复盘”写成一个具体结论，然后给这段思考设个暂停点。'}
+      else if(high===1){type='选择型内耗';typeCopy='小决定也可能占掉不少电量。固定常规选项、给选择设个时间上限，或许能省下一些力气。'}
+      else {type='表演型内耗';typeCopy='你可能花了不少力气维持外在如常。找安全的空间表达真实感受，也是一种恢复。'}
+      const share=`我的精神状态 CPI 是 ${value}%。${title}，内耗类型：${type}。`;
+      resultData={value,title,tag,copy,type,typeCopy,dimensionScores:[...dimensionScores],share};
+      cpiApi('result',{code:activeCode,score,cpi:value}).catch(()=>{});
+      progress.style.width='100%';
+      body.innerHTML=`<div class="result"><div class="q-count">YOUR CPI · ${questions.length} QUESTIONS</div><div class="result-orb">${value}<small style="font-size:17px;letter-spacing:0">%</small></div><h2>${title}</h2><p><strong>${tag}</strong><br>${copy}</p><div style="text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px;margin:0 auto 15px;max-width:430px"><div class="q-count">COGNITIVE EASTER EGG / 内耗类型</div><strong style="display:block;margin:7px 0;font-size:15px">${type}</strong><span style="color:#686d64;font-size:12px;line-height:1.7">${typeCopy}</span><div style="display:flex;gap:9px;margin-top:13px;flex-wrap:wrap">${dimensions.map((d,i)=>`<span class="tag" style="font-family:inherit;letter-spacing:0">${d.name} ${dimensionScores[i]}/16</span>`).join('')}</div></div><div class="result-actions"><button class="secondary" id="saveResult">保存结果长图</button><button class="secondary" id="shareLink">复制结果链接</button><button class="secondary" id="again" ${remainingUses<1?'disabled title="此密码的测评次数已用完"':''}>再测一次 ↺</button><button class="secondary" id="reviewGift">好评有礼 ♡</button></div><p class="result-foot">本密码本设备剩余 ${remainingUses} 次测评机会 · 趣味自我觉察，不是临床诊断</p></div>`;
+      document.getElementById('saveResult').onclick=saveResultImage;
+      document.getElementById('shareLink').onclick=copyResultLink;
+      document.getElementById('again').onclick=()=>{if(remainingUses<1)return;openGate()};
+      document.getElementById('reviewGift').onclick=()=>openModal('noticeModal');
+    }
+    function buildResultSheet(){
+      const d=resultData;
+      const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const section=document.createElement('section');section.className='result-sheet';
+      section.innerHTML=`<div class="sheet-top"><span>状态观察室 / MOOD INDEX</span><span>精神状态 CPI · 36 题库随机抽 12 题</span></div><div class="sheet-hero"><div class="sheet-score">${d.value}%</div><div class="sheet-title">${safe(d.title)}</div><div style="font-weight:600;font-size:14px">${safe(d.tag)}</div><p class="sheet-copy">${safe(d.copy)}</p></div><div class="sheet-box"><div class="q-count">COGNITIVE EASTER EGG</div><h3>你的内耗类型：${safe(d.type)}</h3><p>${safe(d.typeCopy)}</p></div><div class="sheet-box"><div class="q-count">三个维度得分</div><div class="sheet-dims">${dimensions.map((dim,i)=>`<div class="sheet-dim">${safe(dim.name)}<b>${d.dimensionScores[i]} / 16</b></div>`).join('')}</div></div><div class="sheet-box"><div class="q-count">分享文案</div><p>${safe(d.share)}</p></div><div class="sheet-disclaimer">本测评是用于趣味自我觉察的非临床工具，不构成心理诊断或治疗建议。结果仅反映本次作答。若持续感到情绪困扰或影响日常生活，请考虑联系信任的人或专业心理支持。</div>`;
+      return section;
+    }
+    async function saveResultImage(){
+      const button=document.getElementById('saveResult');button.disabled=true;button.textContent='正在生成…';
+      try{
+        const d=resultData, canvas=document.createElement('canvas'), scale=2, width=640, pad=38, inner=width-pad*2;
+        const probe=canvas.getContext('2d');if(!probe)throw new Error('当前浏览器无法生成图片');
+        const wrap=(text,font,maxWidth)=>{probe.font=font;const lines=[];let line='';for(const char of text){const next=line+char;if(probe.measureText(next).width>maxWidth&&line){lines.push(line);line=char}else line=next}if(line)lines.push(line);return lines};
+        const linesFor=(text,font,maxWidth)=>wrap(text,font,maxWidth);
+        const content=[];let y=pad;
+        content.push({type:'top',y});y+=42;
+        content.push({type:'score',y});y+=104;
+        content.push({type:'title',text:d.title,y});y+=42;
+        content.push({type:'tag',text:d.tag,y});y+=25;
+        const copyLines=linesFor(d.copy,'14px sans-serif',inner-20);content.push({type:'copy',lines:copyLines,y});y+=copyLines.length*27+25;
+        content.push({type:'box',label:'COGNITIVE EASTER EGG',title:`你的内耗类型：${d.type}`,lines:linesFor(d.typeCopy,'13px sans-serif',inner-64),y});y+=56+Math.max(1,linesFor(d.typeCopy,'13px sans-serif',inner-64).length)*24+24;
+        content.push({type:'box',label:'三个维度得分',dims:true,y});y+=106;
+        content.push({type:'box',label:'分享文案',lines:linesFor(d.share,'13px sans-serif',inner-64),y});y+=50+Math.max(1,linesFor(d.share,'13px sans-serif',inner-64).length)*24+24;
+        const disclaimer='本测评是用于趣味自我觉察的非临床工具，不构成心理诊断或治疗建议。若持续感到情绪困扰或影响日常生活，请考虑联系信任的人或专业心理支持。';
+        const disclaimerLines=linesFor(disclaimer,'10px sans-serif',inner);content.push({type:'disclaimer',lines:disclaimerLines,y});y+=disclaimerLines.length*20+pad;
+        canvas.width=width*scale;canvas.height=y*scale;const ctx=canvas.getContext('2d');ctx.scale(scale,scale);
+        ctx.fillStyle='#f7f6f2';ctx.fillRect(0,0,width,y);
+        ctx.fillStyle='#20231f';ctx.strokeStyle='#e6e5de';ctx.lineWidth=1;
+        for(const item of content){
+          if(item.type==='top'){ctx.font='11px monospace';ctx.fillStyle='#757970';ctx.fillText('状态观察室 / MOOD INDEX',pad,item.y+12);ctx.textAlign='right';ctx.fillText('精神状态 CPI · 12 题随机抽题',width-pad,item.y+12);ctx.textAlign='left';ctx.beginPath();ctx.moveTo(pad,item.y+26);ctx.lineTo(width-pad,item.y+26);ctx.stroke();ctx.fillStyle='#20231f'}
+          if(item.type==='score'){ctx.font='bold 74px monospace';ctx.textAlign='center';ctx.fillStyle='#20231f';ctx.fillText(`${d.value}%`,width/2,item.y+72);ctx.textAlign='left'}
+          if(item.type==='title'){ctx.font='bold 27px sans-serif';ctx.textAlign='center';ctx.fillText(item.text,width/2,item.y+24);ctx.textAlign='left'}
+          if(item.type==='tag'){ctx.font='600 14px sans-serif';ctx.textAlign='center';ctx.fillText(d.tag,width/2,item.y+12);ctx.textAlign='left'}
+          if(item.type==='copy'){ctx.font='14px sans-serif';ctx.fillStyle='#62675e';item.lines.forEach((line,i)=>ctx.fillText(line,pad+10,item.y+i*27+16));ctx.fillStyle='#20231f'}
+          if(item.type==='box'){const h=item.dims?94:44+Math.max(1,item.lines.length)*24;ctx.fillStyle='#fff';ctx.strokeStyle='#e6e5de';ctx.beginPath();ctx.roundRect(pad,item.y,inner,h,10);ctx.fill();ctx.stroke();ctx.fillStyle='#757970';ctx.font='11px monospace';ctx.fillText(item.label,pad+17,item.y+23);ctx.fillStyle='#20231f';if(item.dims){const names=dimensions.map(x=>x.name);itemLabels(names).forEach((name,i)=>{const col=pad+17+i*(inner-34)/3;ctx.fillStyle='#f5f5ef';ctx.fillRect(col,item.y+36,(inner-52)/3,44);ctx.fillStyle='#62675e';ctx.font='11px sans-serif';ctx.fillText(name,col+8,item.y+53);ctx.fillStyle='#20231f';ctx.font='bold 15px monospace';ctx.fillText(`${d.dimensionScores[i]} / 16`,col+8,item.y+72)});}else{ctx.font='bold 16px sans-serif';ctx.fillText(item.title,pad+17,item.y+48);ctx.fillStyle='#62675e';ctx.font='13px sans-serif';item.lines.forEach((line,i)=>ctx.fillText(line,pad+17,item.y+72+i*24));ctx.fillStyle='#20231f'}}
+          if(item.type==='disclaimer'){ctx.beginPath();ctx.moveTo(pad,item.y);ctx.lineTo(width-pad,item.y);ctx.stroke();ctx.fillStyle='#92968d';ctx.font='10px sans-serif';item.lines.forEach((line,i)=>ctx.fillText(line,pad,item.y+19+i*20));ctx.fillStyle='#20231f'}
+        }
+        function itemLabels(values){return values}
+        const blob=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error('PNG 导出失败')),'image/png'));
+        const filename=`精神状态CPI-${d.value}分.png`, url=URL.createObjectURL(blob), link=document.createElement('a');link.href=url;link.download=filename;link.style.display='none';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+        showToast(`长图已保存：${filename}。通常可在“下载”文件夹中找到。`);
+      }catch(err){console.error(err);showToast(err.message||'长图生成失败，请重试');}
+      finally{button.disabled=false;button.textContent='保存结果长图'}
+    }
+    async function copyResultLink(){
+      const url=new URL(location.href);url.search='';url.hash='result='+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(resultData)))));
+      try{await navigator.clipboard.writeText(url.href);showToast('结果链接已复制');}
+      catch{const field=document.createElement('textarea');field.value=url.href;document.body.appendChild(field);field.select();document.execCommand('copy');field.remove();showToast('结果链接已复制');}
+    }
+    function restoreSharedResult(){
+      const raw=new URLSearchParams(location.hash.slice(1)).get('result');if(!raw)return;
+      try{const parsed=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(raw)))));if(!Number.isFinite(parsed.value)||typeof parsed.title!=='string')return;resultData=parsed;activeCode='';openModal('modal');progress.style.width='100%';renderSharedResult();}
+      catch{showToast('无法读取此结果链接')}
+    }
+    function renderSharedResult(){
+      const d=resultData;body.innerHTML=`<div class="result"><div class="q-count">SHARED RESULT · VIEW ONLY</div><div class="result-orb">${d.value}<small style="font-size:17px;letter-spacing:0">%</small></div><h2>${d.title}</h2><p><strong>${d.tag}</strong><br>${d.copy}</p><div style="text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px;margin:0 auto 15px;max-width:430px"><div class="q-count">COGNITIVE EASTER EGG / 内耗类型</div><strong style="display:block;margin:7px 0;font-size:15px">${d.type}</strong><span style="color:#686d64;font-size:12px;line-height:1.7">${d.typeCopy}</span><div style="display:flex;gap:9px;margin-top:13px;flex-wrap:wrap">${dimensions.map((dim,i)=>`<span class="tag" style="font-family:inherit;letter-spacing:0">${dim.name} ${d.dimensionScores[i]}/16</span>`).join('')}</div></div><button class="secondary" id="startFromShared">我也来测测 ↗</button><p class="result-foot">分享链接中包含这份结果；它不包含答题密码。</p></div>`;document.getElementById('startFromShared').onclick=()=>{history.replaceState(null,'',location.pathname+location.search);openGate()};
+    }
+    restoreSharedResult();
+  </script>
+</body>
+</html>
