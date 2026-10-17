@@ -24,21 +24,15 @@ jobs:
           supabase db push --db-url "$SUPABASE_DB_URL"
       - name: Configure Edge Function secrets
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_SECRETS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           CPI_ADMIN_EMAIL: ${{ secrets.CPI_ADMIN_EMAIL }}
           CPI_SITE_ORIGIN: ${{ secrets.CPI_SITE_ORIGIN }}
         run: |
-          for name in SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_REF SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY CPI_ADMIN_EMAIL CPI_SITE_ORIGIN; do
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_REF CPI_ADMIN_EMAIL CPI_SITE_ORIGIN; do
             test -n "${!name}" || (echo "Missing $name repository secret" && exit 1)
           done
           supabase secrets set --project-ref "$SUPABASE_PROJECT_REF" \
-            SUPABASE_URL="$SUPABASE_URL" \
-            SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
-            SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
             CPI_ADMIN_EMAIL="$CPI_ADMIN_EMAIL" \
             CPI_SITE_ORIGIN="$CPI_SITE_ORIGIN"
       - name: Deploy Edge Function
